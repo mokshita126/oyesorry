@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Heart Assemble Once (Darker)</title>
+  <style>
+    html,body {
+      margin:0;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#0a0519;
+      flex-direction: column;
+    }
+    canvas {
+      border-radius:8px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.6);
+    }
+    audio {
+      margin-top: 20px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="c" width="700" height="700"></canvas>
+
+<!-- Audio player -->
+<audio controls autoplay loop>
+  <source src="Kopama Napina-SenSongsMp3.Co.mp3" type="audio/mpeg">
+  Your browser does not support the audio tag.
+</audio>
+
+<script>
+const WIDTH=700, HEIGHT=700, PARTICLE_COUNT=12000;
+const NAME="SORRY HUSBAND GARU", HOVER_RADIUS=200;
+const BG="rgb(10,5,25)", COLOR="rgba(255,100,150,0.95)", TEXT_COLOR="rgb(255,200,220)";
+const FONT="36px Arial";
+
+const canvas=document.getElementById("c"), ctx=canvas.getContext("2d");
+
+// heart equation
+function heartPoint(scale=15){
+  const t=Math.random()*2*Math.PI;
+  const r=Math.random();
+  const x=scale*r*(16*Math.pow(Math.sin(t),3));
+  const y=-scale*r*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+  return [x+WIDTH/2,y+HEIGHT/2];
+}
+
+// particle class
+class Particle{
+  constructor(){
+    this.x=Math.random()*WIDTH;
+    this.y=Math.random()*HEIGHT;
+    const [tx,ty]=heartPoint();
+    this.tx=tx; this.ty=ty;
+    this.speed = 0.01 + Math.random()*0.03;
+  }
+  update(){
+    this.x += (this.tx-this.x)*this.speed;
+    this.y += (this.ty-this.y)*this.speed;
+  }
+  draw(pulse){
+    const dx=this.tx-WIDTH/2, dy=this.ty-HEIGHT/2;
+    const px=WIDTH/2+dx*pulse, py=HEIGHT/2+dy*pulse;
+    ctx.fillRect(this.x+(px-this.tx), this.y+(py-this.ty), 2, 2);
+  }
+}
+
+const particles=Array.from({length:PARTICLE_COUNT},()=>new Particle());
+let start=performance.now();
+
+function draw(){
+  const t=(performance.now()-start)/1000;
+  ctx.fillStyle=BG; ctx.fillRect(0,0,WIDTH,HEIGHT);
+  const pulse=1+0.05*Math.sin(t*2);
+
+  ctx.fillStyle=COLOR;
+  for(const p of particles){p.update(); p.draw(pulse);}
+
+
+    // Always draw the text, no hover needed
+    ctx.save();
+    ctx.font=FONT;
+    ctx.fillStyle=TEXT_COLOR;
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.shadowColor="rgba(0,0,0,0.6)";
+    ctx.shadowBlur=12;
+    ctx.fillText(NAME,WIDTH/2,HEIGHT/2);
+    ctx.restore();
+
+
+   requestAnimationFrame(draw);
+}
+
+// Removed event listeners for mousemove and mouseleave
+requestAnimationFrame(draw);
+
+</script>
+</body>
+</html>
